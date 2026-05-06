@@ -24,7 +24,7 @@ def club_list(request):
     else:
         all_clubs = Club.objects.filter(approved=True, denied=False)
 
-    paginator = Paginator(all_clubs, 6)
+    paginator = Paginator(all_clubs, 8)
     page_number = request.GET.get('page', 1)
 
     try:

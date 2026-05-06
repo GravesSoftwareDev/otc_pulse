@@ -1,7 +1,7 @@
 """
 seed.py — populate the OTC Engage database with realistic test data.
 
-Usage (from the otc_engage/ directory):
+Usage (from the otc_pulse/ directory):
     python manage.py shell < ../seed.py
   or
     python manage.py shell -c "exec(open('../seed.py').read())"

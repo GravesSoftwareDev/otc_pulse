@@ -1,1 +1,1 @@
-web: cd otc_pulse && python manage.py migrate --no-input && python manage.py collectstatic --no-input && gunicorn otc_pulse.wsgi
+web: cd otc_pulse && python manage.py migrate --no-input --fake-initial && python manage.py collectstatic --no-input && gunicorn otc_pulse.wsgi

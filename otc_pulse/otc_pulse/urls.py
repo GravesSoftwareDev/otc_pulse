@@ -2,8 +2,10 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import HttpResponse
 
 urlpatterns = [
+    path('health/', lambda request: HttpResponse('OK'), name='health'),
     path('admin/', admin.site.urls),
     path('account/', include('account.urls')),
     path('clubs/', include('clubhouse.urls')),

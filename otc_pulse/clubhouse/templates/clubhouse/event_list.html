@@ -12,6 +12,16 @@
 
 <section class="section">
     <div class="section-inner">
+
+        <form method="get" style="margin-bottom:1.5rem;">
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                <input type="text" name="q" value="{{ q }}" placeholder="Search by event title or club…"
+                       style="flex:1;min-width:200px;padding:0.65rem 0.9rem;border:1.5px solid var(--border);border-radius:8px;font-size:0.95rem;color:var(--text);background:#FAFBFC;font-family:inherit;outline:none;">
+                <button type="submit" class="btn btn-secondary">Search</button>
+                {% if q %}<a href="{% url 'clubhouse:event_list' %}" class="btn btn-secondary">✕</a>{% endif %}
+            </div>
+        </form>
+
         {% if events %}
             <div class="event-col-list">
                 {% for event in events %}

@@ -15,7 +15,15 @@
 <section class="section">
     <div class="section-inner">
 
-        <div class="flex-end-bar">
+        <div style="display:flex;align-items:flex-end;gap:0.75rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+            <form method="get" style="flex:1;min-width:200px;">
+                <div style="display:flex;gap:0.5rem;">
+                    <input type="text" name="q" value="{{ q }}" placeholder="Search by club or notes…"
+                           style="flex:1;padding:0.65rem 0.9rem;border:1.5px solid var(--border);border-radius:8px;font-size:0.95rem;color:var(--text);background:#FAFBFC;font-family:inherit;outline:none;">
+                    <button type="submit" class="btn btn-secondary">Search</button>
+                    {% if q %}<a href="{% url 'bulletin_board:request_list' %}" class="btn btn-secondary">✕</a>{% endif %}
+                </div>
+            </form>
             <a href="{% url 'bulletin_board:create_request' %}" class="btn btn-primary">+ New Request</a>
         </div>
 

@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.contrib import messages
+from django.db.models import Q
 from .forms import RequestForm, ReservationForm
 from .models import Request, Reservation
 from clubhouse.models import Event
@@ -21,10 +22,17 @@ def request_list(request):
     requests = _requests_for_profile(profile)
     is_admin = profile.role == profile.Role.ADMIN
 
+    q = request.GET.get('q', '').strip()
+    if q:
+        requests = requests.filter(
+            Q(club__name__icontains=q) | Q(notes__icontains=q)
+        )
+
     return render(request, 'bulletin_board/request_list.html', {
         'requests': requests,
         'section': 'bulletin_board',
         'is_admin': is_admin,
+        'q': q,
     })
 
 @login_required

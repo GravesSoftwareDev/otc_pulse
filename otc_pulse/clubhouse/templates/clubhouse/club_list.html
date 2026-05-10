@@ -15,7 +15,15 @@
 <section class="section">
     <div class="section-inner">
 
-        <div class="flex-end-bar">
+        <div style="display:flex;align-items:flex-end;gap:0.75rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+            <form method="get" style="flex:1;min-width:200px;">
+                <div style="display:flex;gap:0.5rem;">
+                    <input type="text" name="q" value="{{ q }}" placeholder="Search clubs…"
+                           style="flex:1;padding:0.65rem 0.9rem;border:1.5px solid var(--border);border-radius:8px;font-size:0.95rem;color:var(--text);background:#FAFBFC;font-family:inherit;outline:none;">
+                    <button type="submit" class="btn btn-secondary">Search</button>
+                    {% if q %}<a href="{% url 'clubhouse:club_list' %}" class="btn btn-secondary">✕</a>{% endif %}
+                </div>
+            </form>
             <a href="{% url 'clubhouse:club_create' %}" class="btn btn-primary">+ Create Club</a>
         </div>
 
@@ -45,11 +53,11 @@
             {% if clubs.has_other_pages %}
                 <div class="pagination">
                     {% if clubs.has_previous %}
-                        <a href="?page={{ clubs.previous_page_number }}" class="btn btn-secondary">← Previous</a>
+                        <a href="?page={{ clubs.previous_page_number }}{% if q %}&q={{ q }}{% endif %}" class="btn btn-secondary">← Previous</a>
                     {% endif %}
                     <span class="page-info">Page {{ clubs.number }} of {{ clubs.paginator.num_pages }}</span>
                     {% if clubs.has_next %}
-                        <a href="?page={{ clubs.next_page_number }}" class="btn btn-secondary">Next →</a>
+                        <a href="?page={{ clubs.next_page_number }}{% if q %}&q={{ q }}{% endif %}" class="btn btn-secondary">Next →</a>
                     {% endif %}
                 </div>
             {% endif %}

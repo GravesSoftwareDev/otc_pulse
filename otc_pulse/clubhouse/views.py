@@ -16,6 +16,7 @@ from account.models import Profile
 
 @login_required
 def club_list(request):
+    from django.db.models import Q as DQ
     profile = request.user.profile
     is_admin = profile.role == profile.Role.ADMIN
 
@@ -23,6 +24,12 @@ def club_list(request):
         all_clubs = Club.objects.all().order_by('approved', 'denied', 'name')
     else:
         all_clubs = Club.objects.filter(approved=True, denied=False)
+
+    q = request.GET.get('q', '').strip()
+    if q:
+        all_clubs = all_clubs.filter(
+            DQ(name__icontains=q) | DQ(description__icontains=q)
+        )
 
     paginator = Paginator(all_clubs, 8)
     page_number = request.GET.get('page', 1)
@@ -37,6 +44,7 @@ def club_list(request):
     return render(request, 'clubhouse/club_list.html', {
         'clubs': clubs,
         'is_admin': is_admin,
+        'q': q,
         'section': 'clubhouse',
     })
 
@@ -316,6 +324,8 @@ def create_event(request, slug):
 
 @login_required
 def event_list(request):
+    from django.db.models import Q as DQ
+    q = request.GET.get('q', '').strip()
     events = (
         Event.objects.filter(
             club__approved=True, club__denied=False,
@@ -325,6 +335,10 @@ def event_list(request):
         .select_related('club', 'location')
         .order_by('start_time')
     )
+    if q:
+        events = events.filter(
+            DQ(title__icontains=q) | DQ(club__name__icontains=q)
+        )
     attended_pks = set(
         Attendance.objects.filter(user=request.user)
         .values_list('event_id', flat=True)
@@ -337,6 +351,7 @@ def event_list(request):
         'events': events,
         'attended_pks': attended_pks,
         'surveyed_pks': surveyed_pks,
+        'q': q,
         'section': 'clubhouse',
     })
 def _can_edit_club(profile, club):

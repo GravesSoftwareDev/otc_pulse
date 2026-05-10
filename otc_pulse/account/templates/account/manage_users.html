@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Users | OTCPulse{% endblock %}
+
+{% block content %}
+
+<section class="hero hero-short">
+    <div class="hero-inner">
+        <span class="hero-badge">Admin</span>
+        <h1>Manage <span class="highlight">Users</span></h1>
+        <p>Search for a registered user and update their role.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="section-inner">
+
+        <div class="card card-mb">
+            <form method="get" action="{% url 'account:manage_users' %}">
+                <div style="display:flex;gap:0.75rem;align-items:flex-end;flex-wrap:wrap;">
+                    <div class="field" style="flex:1;min-width:220px;margin:0;">
+                        <label for="q">Search by name, username, or OTC email</label>
+                        <input type="text" id="q" name="q" value="{{ q }}" placeholder="e.g. Jane Smith" autofocus>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Search</button>
+                    {% if q %}
+                        <a href="{% url 'account:manage_users' %}" class="btn btn-secondary">Clear</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+
+        {% if q %}
+            {% if results %}
+                <div style="display:flex;flex-direction:column;gap:0.75rem;">
+                    {% for target in results %}
+                        <div class="card" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;justify-content:space-between;">
+                            <div style="display:flex;align-items:center;gap:0.75rem;">
+                                <div class="member-avatar">{{ target.user.first_name|first|upper }}{{ target.user.last_name|first|upper }}</div>
+                                <div>
+                                    <p style="font-weight:600;color:var(--navy);margin:0;">{{ target.user.get_full_name|default:target.user.username }}</p>
+                                    <p class="event-meta" style="margin:0;">{{ target.otc_email }}</p>
+                                </div>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+                                <span class="profile-role-badge {% if target.role == 'ADMIN' %}badge-navy{% elif target.role == 'ADVISOR' %}badge-teal{% elif target.role == 'LEAD' %}badge-gold{% else %}badge-gray{% endif %}">
+                                    {{ target.get_role_display }}
+                                </span>
+                                <form method="post" action="{% url 'account:set_role' target.pk %}" style="display:flex;gap:0.5rem;align-items:center;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="q" value="{{ q }}">
+                                    <select name="role" style="padding:0.5rem 0.75rem;border:1.5px solid var(--border);border-radius:8px;font-size:0.9rem;color:var(--text);background:#FAFBFC;font-family:inherit;">
+                                        {% for value, label in roles %}
+                                            <option value="{{ value }}" {% if value == target.role %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="auth-success-icon">🔍</div>
+                    <h3>No users found</h3>
+                    <p>No registered users match "<strong>{{ q }}</strong>". Try a different name or email.</p>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="empty-state">
+                <div class="auth-success-icon">👥</div>
+                <h3>Search for a user</h3>
+                <p>Enter a name, username, or OTC email above to find an account.</p>
+            </div>
+        {% endif %}
+
+    </div>
+</section>
+
+{% endblock %}

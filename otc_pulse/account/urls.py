@@ -37,4 +37,6 @@ urlpatterns = [
     path('profile/edit/', views.edit_profile, name='edit_profile'),
     path('my-qr/', views.my_qr_page, name='my_qr'),
     path('my-qr/image/', views.my_qr_image, name='my_qr_image'),
+    path('manage-users/', views.manage_users, name='manage_users'),
+    path('manage-users/<int:profile_pk>/set-role/', views.set_role, name='set_role'),
 ]

@@ -1,10 +1,14 @@
 import io
 import qrcode
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
+from django.db.models import Q
+from django.urls import reverse
 from .forms import UserRegistrationForm, ProfileRegistrationForm, UserEditForm, ProfileEditForm
+from .models import Profile
 from bulletin_board.models import Request, Reservation
 
 
@@ -79,6 +83,54 @@ def my_qr_image(request):
     img.save(buffer, format='PNG')
     buffer.seek(0)
     return HttpResponse(buffer, content_type='image/png')
+
+
+@login_required
+def manage_users(request):
+    profile = request.user.profile
+    if profile.role != profile.Role.ADMIN:
+        raise PermissionDenied
+
+    q = request.GET.get('q', '').strip()
+    results = None
+    if q:
+        results = (
+            Profile.objects.select_related('user')
+            .filter(
+                Q(user__first_name__icontains=q) |
+                Q(user__last_name__icontains=q) |
+                Q(user__username__icontains=q) |
+                Q(otc_email__icontains=q)
+            )
+            .exclude(pk=profile.pk)
+            .order_by('user__last_name', 'user__first_name')
+        )
+
+    return render(request, 'account/manage_users.html', {
+        'results': results,
+        'q': q,
+        'roles': Profile.Role.choices,
+        'section': 'account',
+    })
+
+
+@login_required
+def set_role(request, profile_pk):
+    if request.user.profile.role != request.user.profile.Role.ADMIN:
+        raise PermissionDenied
+    if request.method == 'POST':
+        target = get_object_or_404(Profile, pk=profile_pk)
+        new_role = request.POST.get('role')
+        valid_roles = [r[0] for r in Profile.Role.choices]
+        if new_role in valid_roles:
+            target.role = new_role
+            target.save(update_fields=['role'])
+            messages.success(request, f'{target} has been updated to {target.get_role_display()}.')
+    q = request.POST.get('q', '')
+    url = reverse('account:manage_users')
+    if q:
+        url += f'?q={q}'
+    return redirect(url)
 
 
 @login_required

@@ -51,6 +51,10 @@
                             <a href="{% url 'account:my_qr' %}"       class="nav-dropdown-item" role="menuitem">📲 My QR Code</a>
                             <a href="{% url 'account:edit_profile' %}" class="nav-dropdown-item" role="menuitem">✏️ Edit Profile</a>
                             <a href="{% url 'account:password_change' %}" class="nav-dropdown-item" role="menuitem">🔒 Change Password</a>
+                            {% if user.profile.role == 'ADMIN' %}
+                            <div class="nav-dropdown-divider"></div>
+                            <a href="{% url 'account:manage_users' %}" class="nav-dropdown-item" role="menuitem">⚙️ Manage Users</a>
+                            {% endif %}
                             <div class="nav-dropdown-divider"></div>
                             <form method="post" action="{% url 'account:logout' %}">
                                 {% csrf_token %}
@@ -82,6 +86,9 @@
             <a href="{% url 'account:profile' %}"     class="nav-mobile-link">👤 My Profile</a>
             <a href="{% url 'account:my_qr' %}"       class="nav-mobile-link">📲 My QR Code</a>
             <a href="{% url 'account:edit_profile' %}" class="nav-mobile-link">✏️ Edit Profile</a>
+            {% if user.profile.role == 'ADMIN' %}
+            <a href="{% url 'account:manage_users' %}" class="nav-mobile-link">⚙️ Manage Users</a>
+            {% endif %}
             <div class="nav-mobile-divider"></div>
             <form method="post" action="{% url 'account:logout' %}">
                 {% csrf_token %}

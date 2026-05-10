@@ -57,3 +57,43 @@ class ReservationForm(forms.ModelForm):
         if start and end and end <= start:
             raise forms.ValidationError('End time must be after start time.')
         return cleaned_data
+
+
+class StandaloneReservationForm(forms.ModelForm):
+    class Meta:
+        model = Reservation
+        fields = ['club', 'location', 'start_time', 'end_time', 'purpose']
+        widgets = {
+            'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+            'end_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+            'purpose': forms.TextInput(attrs={'placeholder': 'e.g. Weekly officer meeting'}),
+        }
+
+    def __init__(self, *args, profile=None, initial_club=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['start_time'].input_formats = ['%Y-%m-%dT%H:%M']
+        self.fields['end_time'].input_formats = ['%Y-%m-%dT%H:%M']
+        self.fields['location'].queryset = Location.objects.all()
+        self.fields['purpose'].required = False
+
+        if profile is not None:
+            clubs = (
+                profile.club_officer.filter(approved=True, denied=False) |
+                profile.faculty_advisor.filter(approved=True, denied=False)
+            ).distinct()
+            if profile.role == profile.Role.ADMIN:
+                clubs = Club.objects.filter(approved=True, denied=False)
+            self.fields['club'].queryset = clubs
+        else:
+            self.fields['club'].queryset = Club.objects.none()
+
+        if initial_club is not None:
+            self.fields['club'].initial = initial_club
+
+    def clean(self):
+        cleaned_data = super().clean()
+        start = cleaned_data.get('start_time')
+        end = cleaned_data.get('end_time')
+        if start and end and end <= start:
+            raise forms.ValidationError('End time must be after start time.')
+        return cleaned_data

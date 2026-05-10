@@ -152,14 +152,12 @@
             {% endif %}
         </div>
 
-        <!-- Reservations (admin only) -->
-        {% if is_admin and reservations is not None %}
+        <!-- Reservations -->
+        {% if reservations is not None %}
         <div class="card">
             <div class="card-header-row">
                 <h2 class="card-section-title">Reservations</h2>
-                {% if reservations %}
-                    <span class="text-muted-sm">{{ reservations|length }} pending</span>
-                {% endif %}
+                <a href="{% url 'bulletin_board:create_meeting_reservation' %}" class="btn btn-primary btn-sm">+ Reserve a Space</a>
             </div>
             {% if reservations %}
                 <div class="reservations-list">
@@ -168,7 +166,11 @@
                             <div class="reservation-card-row">
                                 <div>
                                     <div class="reservation-title-row">
-                                        <span class="reservation-title">{{ res.event.title }}</span>
+                                        {% if res.event %}
+                                            <span class="reservation-title">{{ res.event.title }}</span>
+                                        {% else %}
+                                            <span class="reservation-title">{{ res.purpose|default:"Meeting" }}</span>
+                                        {% endif %}
                                         <span class="profile-role-badge badge-navy">{{ res.club.name }}</span>
                                         {% if res.approved %}
                                             <span class="profile-role-badge badge-teal">Approved</span>
@@ -182,6 +184,7 @@
                                         · {{ res.start_time|date:"M j, Y g:i A" }} – {{ res.end_time|date:"g:i A" }}
                                     </p>
                                 </div>
+                                {% if is_admin %}
                                 <div class="reservation-actions">
                                     <form method="post" action="{% url 'bulletin_board:approve_reservation' res.pk %}">
                                         {% csrf_token %}
@@ -192,6 +195,7 @@
                                         <button type="submit" class="btn btn-secondary btn-sm btn-danger-text">Deny</button>
                                     </form>
                                 </div>
+                                {% endif %}
                             </div>
                         </div>
                     {% endfor %}
@@ -199,7 +203,8 @@
             {% else %}
                 <div class="empty-state">
                     <div class="auth-success-icon">📍</div>
-                    <p>No reservations awaiting approval.</p>
+                    <p>No reservations yet.</p>
+                    <a href="{% url 'bulletin_board:create_meeting_reservation' %}" class="btn btn-primary btn-sm" style="margin-top:0.75rem;">Reserve a Space</a>
                 </div>
             {% endif %}
         </div>

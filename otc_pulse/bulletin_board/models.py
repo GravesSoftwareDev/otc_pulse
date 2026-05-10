@@ -49,9 +49,15 @@ class Reservation(models.Model):
     end_time = models.DateTimeField()
     event = models.ForeignKey(
         Event,
+        null=True, blank=True,
         on_delete=models.CASCADE,
         related_name='reservations'
     )
+    purpose = models.CharField(max_length=200, blank=True, default='')
     approved = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        label = self.event.title if self.event else (self.purpose or 'Meeting')
+        return f'{self.club.name} — {label} ({self.start_time:%b %-d, %Y})'

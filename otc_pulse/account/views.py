@@ -52,17 +52,25 @@ def profile(request):
         profile.club_member.all() | profile.faculty_advisor.all()
     ).distinct().count()
 
-    reservations = (
-        Reservation.objects.select_related('event', 'club', 'location').order_by('event__start_time')
-        if profile.role == profile.Role.ADMIN
-        else None
-    )
+    is_admin = profile.role == profile.Role.ADMIN
+    if is_admin:
+        reservations = (
+            Reservation.objects.select_related('event', 'club', 'location')
+            .order_by('start_time')
+        )
+    else:
+        managed_clubs = profile.club_officer.all() | profile.faculty_advisor.all()
+        reservations = (
+            Reservation.objects.select_related('event', 'club', 'location')
+            .filter(club__in=managed_clubs)
+            .order_by('start_time')
+        ) if managed_clubs.exists() else None
 
     return render(request, 'account/profile.html', {
         'profile': profile,
         'club_requests': club_requests,
         'reservations': reservations,
-        'is_admin': profile.role == profile.Role.ADMIN,
+        'is_admin': is_admin,
         'club_count': club_count,
     })
 

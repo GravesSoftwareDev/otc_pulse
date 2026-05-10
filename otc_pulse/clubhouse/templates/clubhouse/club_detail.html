@@ -381,6 +381,7 @@
 
                 {% if can_edit %}
                 <div class="col-gap">
+                    <a href="{% url 'bulletin_board:create_meeting_reservation' %}?club={{ club.slug }}" class="btn btn-secondary btn-full">📍 Reserve a Space</a>
                     <a href="{% url 'clubhouse:edit_club' club.slug %}" class="btn btn-secondary btn-full">Edit Club</a>
                 </div>
                 {% endif %}

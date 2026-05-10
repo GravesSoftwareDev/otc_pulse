@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.contrib import messages
 from django.db.models import Q
-from .forms import RequestForm, ReservationForm
+from .forms import RequestForm, ReservationForm, StandaloneReservationForm
 from .models import Request, Reservation
 from clubhouse.models import Event
 
@@ -92,6 +92,46 @@ def create_reservation(request, event_pk):
         'club': club,
         'section': 'bulletin_board',
     })
+
+@login_required
+def create_meeting_reservation(request):
+    profile = request.user.profile
+    is_officer_or_above = (
+        profile.club_officer.filter(approved=True, denied=False).exists() or
+        profile.faculty_advisor.filter(approved=True, denied=False).exists() or
+        profile.role == profile.Role.ADMIN
+    )
+    if not is_officer_or_above:
+        raise PermissionDenied
+
+    initial_club = None
+    club_slug = request.GET.get('club')
+    if club_slug:
+        from clubhouse.models import Club
+        try:
+            initial_club = Club.objects.get(slug=club_slug, approved=True, denied=False)
+        except Club.DoesNotExist:
+            pass
+
+    form = StandaloneReservationForm(
+        data=request.POST or None,
+        profile=profile,
+        initial_club=initial_club,
+    )
+
+    if request.method == 'POST' and form.is_valid():
+        reservation = form.save(commit=False)
+        reservation.event = None
+        reservation.save()
+        messages.success(request, 'Space reservation submitted for approval.')
+        return redirect('clubhouse:club_detail', slug=reservation.club.slug)
+
+    return render(request, 'bulletin_board/create_meeting_reservation.html', {
+        'form': form,
+        'initial_club': initial_club,
+        'section': 'bulletin_board',
+    })
+
 
 @login_required
 def set_reservation_approval(request, pk, approved):

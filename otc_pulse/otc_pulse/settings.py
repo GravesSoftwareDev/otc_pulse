@@ -8,7 +8,10 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-change-me-before-prod
 
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+_raw_hosts = os.environ.get('ALLOWED_HOSTS', '*')
+ALLOWED_HOSTS = [h.strip() for h in _raw_hosts.replace(',', ' ').split() if h.strip()]
+# Always allow Railway's internal health-check and private networking hosts
+ALLOWED_HOSTS += ['.railway.app', '.railway.internal', '.up.railway.app']
 
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
